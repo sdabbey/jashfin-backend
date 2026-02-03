@@ -65,12 +65,7 @@ class LoanApplication(models.Model):
         choices=Status.choices,
         default=Status.DRAFT
     )
-    reviewed_by = models.ForeignKey(
-        Employee,
-        null=True,
-        blank=True,
-        on_delete=models.PROTECT
-    )
+    
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -118,6 +113,31 @@ class Loan(models.Model):
     maturity_date = models.DateField()
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+class LoanApproval(models.Model):
+    class Decision(models.TextChoices):
+        AUTO_APPROVED = "AUTO_APPROVED", "Auto Approved"
+        MANUAL_APPROVED = "MANUAL_APPROVED", "Manual Approved"
+        REJECTED = "REJECTED", "Rejected"
+
+    loan = models.OneToOneField(
+        "LoanApplication",
+        on_delete=models.CASCADE,
+        related_name="approval"
+    )
+    reviewed_by = models.ForeignKey(
+        Employee,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Employee who manually reviewed the loan (if applicable)"
+    )
+    decision = models.CharField(max_length=20, choices=Decision.choices)
+    justification = models.TextField(blank=True, help_text="Reason for manual decision or override")
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Loan {self.loan.id} - {self.decision}"
 
 
 class StudentVerification(models.Model):
