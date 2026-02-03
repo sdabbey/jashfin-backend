@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.conf import settings
 # Create your models here.
 class FinancialInstitution(models.Model):
     class InstitutionType(models.TextChoices):
@@ -99,3 +100,32 @@ class FinancialInstitution(models.Model):
 
     def __str__(self):
         return self.legal_name
+    
+class Employee(models.Model):
+    class Role(models.TextChoices):
+        CREDIT_OFFICER = "CREDIT_OFFICER", "Credit Officer"
+        SUPERVISOR = "SUPERVISOR", "Supervisor"
+        ADMIN = "ADMIN", "Admin"
+
+    institution = models.ForeignKey(
+        FinancialInstitution,
+        on_delete=models.PROTECT,
+        related_name="employees"
+    )
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    role = models.CharField(
+        max_length=30,
+        choices=Role.choices
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.get_full_name()} @ {self.institution.name}"
