@@ -65,7 +65,8 @@ class LedgerEntry(models.Model):
         ordering = ["created_at"]
 
     def save(self, *args, **kwargs):
-        if self.pk:
+        # Allow inserts, block updates
+        if self.pk and not kwargs.get("force_insert", False):
             raise ValidationError("Ledger entries are immutable.")
         super().save(*args, **kwargs)
     
