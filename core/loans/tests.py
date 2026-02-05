@@ -2,15 +2,16 @@ from decimal import Decimal
 from django.test import TestCase
 from django.utils import timezone
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth import get_user_model
 from loans.models import (
     LoanProduct, LoanApplication, Loan, LoanApproval,
     StudentVerification, BusinessVerification, EmploymentVerification,
     SustainabilityVerification
 )
-
 from customers.models import Customer
-from institutions.models import Employee
+from institutions.models import Employee, FinancialInstitution
 
+User = get_user_model()
 class LoanModelsTestCase(TestCase):
     def setUp(self):
         # Sample Customer
@@ -25,12 +26,34 @@ class LoanModelsTestCase(TestCase):
             monthly_income=1000
         )
 
-        # Sample Employee
-        self.employee = Employee.objects.create(
+        # Dummy Financial Institution
+        self.fi = FinancialInstitution.objects.create(
+            legal_name="JashFin Bank Ltd",
+            trading_name="JashFin",
+            company_registration_number="RC12345678",
+            license_number="LIC-0001",
+            licensing_act="Act 930",
+            institution_type=FinancialInstitution.InstitutionType.BANK,
+            minimum_required_capital=1000000,
+            declared_paid_up_capital=1000000,
+            can_accept_deposits=True,
+            can_lend=True
+        )
+
+        # Dummy User for Employee
+        self.user = User.objects.create_user(
+            username="johndoe",
             first_name="John",
             last_name="Doe",
             email="john@example.com",
-            role="LoanOfficer"
+            password="password123"
+        )
+
+        # Sample Employee
+        self.employee = Employee.objects.create(
+            user=self.user,
+            institution=self.fi,
+            role=Employee.Role.CREDIT_OFFICER
         )
 
         # Loan Product
@@ -63,7 +86,6 @@ class LoanModelsTestCase(TestCase):
             disbursed_at=timezone.now(),
             maturity_date=timezone.now().date()
         )
-
     def test_loan_application_str(self):
         self.assertIn("LoanApplication", str(self.loan_app))
         self.assertIn(self.customer.national_id_number, str(self.loan_app))

@@ -72,8 +72,12 @@ class LoanApplication(models.Model):
     submitted_at = models.DateTimeField(null=True, blank=True)
     decided_at = models.DateTimeField(null=True, blank=True)
 
+    # def __str__(self):
+        # return f"LoanApplication #{self.id} - {self.customer_id} - {self.product.code}"
+       
     def __str__(self):
-        return f"LoanApplication #{self.id} - {self.customer_id} - {self.product.code}"
+        return f"LoanApplication #{self.id} - {self.customer.national_id_number} - {self.product.code}"
+
 
 
 
