@@ -127,5 +127,14 @@ class Employee(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def is_admin(self):
+        return self.role == self.Role.ADMIN
+
+    def is_supervisor(self):
+        return self.role == self.Role.SUPERVISOR
+
+    def is_credit_officer(self):
+        return self.role == self.Role.CREDIT_OFFICER
+
     def __str__(self):
         return f"{self.user.get_full_name()} @ {self.institution.name}"
